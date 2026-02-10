@@ -1,0 +1,202 @@
+<form version="1.1">
+  <label>Sycope NPM - Alert Detail</label>
+  <description>Drill-down view for individual alerts or filtered alert sets</description>
+
+  <fieldset submitButton="true" autoRun="true">
+    <input type="time" token="time_range" searchWhenChanged="true">
+      <label>Time Range</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="text" token="alert_id_filter" searchWhenChanged="true">
+      <label>Alert ID</label>
+      <default>*</default>
+      <prefix>alert_id="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="dropdown" token="alert_name_filter" searchWhenChanged="true">
+      <label>Alert Name</label>
+      <choice value="*">All</choice>
+      <default>*</default>
+      <prefix>alert_name="</prefix>
+      <suffix>"</suffix>
+      <search>
+        <query>`sycope_index` | stats count by alert_name | sort - count</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+      <fieldForLabel>alert_name</fieldForLabel>
+      <fieldForValue>alert_name</fieldForValue>
+    </input>
+    <input type="text" token="src_filter" searchWhenChanged="true">
+      <label>Source IP</label>
+      <default>*</default>
+      <prefix>src_ip="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="text" token="dest_filter" searchWhenChanged="true">
+      <label>Destination IP</label>
+      <default>*</default>
+      <prefix>dest_ip="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="dropdown" token="severity_filter" searchWhenChanged="true">
+      <label>Severity</label>
+      <choice value="*">All</choice>
+      <choice value="critical">Critical</choice>
+      <choice value="high">High</choice>
+      <choice value="medium">Medium</choice>
+      <choice value="low">Low</choice>
+      <default>*</default>
+      <prefix>severity="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="text" token="mitre_filter" searchWhenChanged="true">
+      <label>MITRE ID</label>
+      <default>*</default>
+      <prefix>mitre_technique_id="</prefix>
+      <suffix>"</suffix>
+    </input>
+  </fieldset>
+
+  <!-- Row 1: Summary Stats -->
+  <row>
+    <panel>
+      <title>Matching Alerts</title>
+      <single>
+        <search>
+          <query>`sycope_index` $alert_id_filter$ $alert_name_filter$ $src_filter$ $dest_filter$ $severity_filter$ $mitre_filter$
+| stats count</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Unique Sources</title>
+      <single>
+        <search>
+          <query>`sycope_index` $alert_id_filter$ $alert_name_filter$ $src_filter$ $dest_filter$ $severity_filter$ $mitre_filter$ src_ip=*
+| stats dc(src_ip)</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Unique Destinations</title>
+      <single>
+        <search>
+          <query>`sycope_index` $alert_id_filter$ $alert_name_filter$ $src_filter$ $dest_filter$ $severity_filter$ $mitre_filter$ dest_ip=*
+| stats dc(dest_ip)</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Unique Alert Types</title>
+      <single>
+        <search>
+          <query>`sycope_index` $alert_id_filter$ $alert_name_filter$ $src_filter$ $dest_filter$ $severity_filter$ $mitre_filter$
+| stats dc(alert_name)</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+  </row>
+
+  <!-- Row 2: Timeline of filtered alerts -->
+  <row>
+    <panel>
+      <title>Filtered Alerts Timeline</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $alert_id_filter$ $alert_name_filter$ $src_filter$ $dest_filter$ $severity_filter$ $mitre_filter$
+| timechart span=1h count by alert_name limit=10</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY.text">Alert Count</option>
+      </chart>
+    </panel>
+  </row>
+
+  <!-- Row 3: Alert Detail Table -->
+  <row>
+    <panel>
+      <title>Alert Details</title>
+      <table>
+        <search>
+          <query>`sycope_index` $alert_id_filter$ $alert_name_filter$ $src_filter$ $dest_filter$ $severity_filter$ $mitre_filter$
+| table _time, sourcetype, alert_name, severity, src_ip, dest_ip, dest_port, transport,
+        mitre_tactic, mitre_technique, mitre_technique_id,
+        alert_id, alert_rule_id, alert_definition_id, alert_threshold_level,
+        alert_score, session_count, unique_client_ips, sum_bytes
+| sort - _time</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">row</option>
+        <option name="count">20</option>
+        <option name="wrap">false</option>
+        <format type="color" field="severity">
+          <colorPalette type="map">{"critical":#dc4e41,"high":#f1813f,"medium":#f8be34,"low":#53a051,"informational":#0877a6}</colorPalette>
+        </format>
+        <drilldown>
+          <set token="selected_alert_id">$row.alert_id$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+
+  <!-- Row 4: Single Alert Detail (shown when alert_id selected) -->
+  <row depends="$selected_alert_id$">
+    <panel>
+      <title>Full Event Details - Alert ID: $selected_alert_id$</title>
+      <event>
+        <search>
+          <query>`sycope_index` alert_id="$selected_alert_id$"</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="count">5</option>
+        <option name="list.drilldown">none</option>
+        <option name="maxLines">0</option>
+        <option name="raw.drilldown">none</option>
+        <option name="type">list</option>
+      </event>
+    </panel>
+  </row>
+
+  <!-- Row 5: All Fields for selected alert -->
+  <row depends="$selected_alert_id$">
+    <panel>
+      <title>Extracted Fields - Alert ID: $selected_alert_id$</title>
+      <table>
+        <search>
+          <query>`sycope_index` alert_id="$selected_alert_id$"
+| head 1
+| fields - _raw, _time, _si, _serial, _indextime, _cd, _bkt, _kv, splunk_server, splunk_server_group, index, linecount, punct, timeendpos, timestartpos, eventtype, tag, tag::eventtype, date_*
+| transpose
+| rename column AS "Field", "row 1" AS "Value"</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="count">50</option>
+      </table>
+    </panel>
+  </row>
+</form>

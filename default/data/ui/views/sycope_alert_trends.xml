@@ -1,0 +1,185 @@
+<form version="1.1">
+  <label>Sycope NPM - Alert Trend Analysis</label>
+  <description>Long-term trend analysis of Sycope security alert patterns</description>
+
+  <fieldset submitButton="true" autoRun="true">
+    <input type="time" token="time_range" searchWhenChanged="true">
+      <label>Time Range</label>
+      <default>
+        <earliest>-7d@d</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="multiselect" token="alert_name_filter" searchWhenChanged="true">
+      <label>Alert Name</label>
+      <choice value="*">All</choice>
+      <default>*</default>
+      <delimiter> OR </delimiter>
+      <prefix>(</prefix>
+      <suffix>)</suffix>
+      <valuePrefix>alert_name="</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <search>
+        <query>`sycope_index` | stats count by alert_name | sort - count</query>
+        <earliest>-7d@d</earliest>
+        <latest>now</latest>
+      </search>
+      <fieldForLabel>alert_name</fieldForLabel>
+      <fieldForValue>alert_name</fieldForValue>
+    </input>
+    <input type="dropdown" token="severity_filter" searchWhenChanged="true">
+      <label>Severity</label>
+      <choice value="*">All</choice>
+      <choice value="critical">Critical</choice>
+      <choice value="high">High</choice>
+      <choice value="medium">Medium</choice>
+      <choice value="low">Low</choice>
+      <default>*</default>
+      <prefix>severity="</prefix>
+      <suffix>"</suffix>
+    </input>
+  </fieldset>
+
+  <!-- Row 1: Alert Volume Over Time -->
+  <row>
+    <panel>
+      <title>Alert Volume Over Time</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $severity_filter$ $alert_name_filter$
+| timechart span=1h count by alert_name limit=10</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY.text">Alert Count</option>
+        <option name="height">350</option>
+      </chart>
+    </panel>
+  </row>
+
+  <!-- Row 2: Day of Week + Hour of Day -->
+  <row>
+    <panel>
+      <title>Alert Volume by Day of Week</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $severity_filter$ $alert_name_filter$
+| eval day_of_week = strftime(_time, "%A")
+| eval day_order = strftime(_time, "%u")
+| stats count by day_of_week, day_order
+| sort day_order
+| fields - day_order</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.axisTitleX.text">Day of Week</option>
+        <option name="charting.axisTitleY.text">Alert Count</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.chart.showDataLabels">all</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Alert Volume by Hour of Day</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $severity_filter$ $alert_name_filter$
+| eval hour = strftime(_time, "%H")
+| stats count by hour
+| sort hour</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.axisTitleX.text">Hour (UTC)</option>
+        <option name="charting.axisTitleY.text">Alert Count</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.chart.showDataLabels">all</option>
+      </chart>
+    </panel>
+  </row>
+
+  <!-- Row 3: Severity Trend -->
+  <row>
+    <panel>
+      <title>Severity Trend Over Time</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $alert_name_filter$
+| timechart span=1h count by severity</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.seriesColors">[0xdc4e41,0xf1813f,0xf8be34,0x53a051,0x0877a6]</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY.text">Alert Count</option>
+      </chart>
+    </panel>
+  </row>
+
+  <!-- Row 4: First-seen / Recurring Analysis -->
+  <row>
+    <panel>
+      <title>Alert Type Analysis - First Seen &amp; Activity</title>
+      <table>
+        <search>
+          <query>`sycope_index` $severity_filter$ $alert_name_filter$
+| stats earliest(_time) AS first_seen,
+        latest(_time) AS last_seen,
+        count AS total_alerts,
+        dc(src_ip) AS unique_sources,
+        dc(dest_ip) AS unique_targets,
+        values(severity) AS severities,
+        values(mitre_tactic) AS mitre_tactics
+    by alert_name
+| eval first_seen = strftime(first_seen, "%Y-%m-%d %H:%M:%S")
+| eval last_seen = strftime(last_seen, "%Y-%m-%d %H:%M:%S")
+| sort - total_alerts
+| rename alert_name AS "Alert Name", first_seen AS "First Seen", last_seen AS "Last Seen", total_alerts AS "Total Alerts", unique_sources AS "Unique Sources", unique_targets AS "Unique Targets", severities AS "Severities", mitre_tactics AS "MITRE Tactics"</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">row</option>
+        <option name="count">20</option>
+        <format type="color" field="Total Alerts">
+          <colorPalette type="minMidMax" maxColor="#dc4e41" midColor="#f8be34" minColor="#53a051"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+        <drilldown>
+          <link target="_blank">/app/TA-sycope/sycope_alert_detail?form.alert_name_filter=$row.Alert Name$</link>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+
+  <!-- Row 5: Alert Rate Comparison -->
+  <row>
+    <panel>
+      <title>Average Alerts Per Hour by Alert Type</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $severity_filter$ $alert_name_filter$
+| timechart span=1h count by alert_name limit=10
+| untable _time, alert_name, count
+| stats avg(count) AS avg_per_hour by alert_name
+| sort - avg_per_hour
+| head 10</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">bar</option>
+        <option name="charting.axisTitleX.text">Avg Alerts / Hour</option>
+        <option name="charting.axisTitleY.text">Alert Name</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.chart.showDataLabels">all</option>
+      </chart>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,15 @@
+tactic_id,tactic_name,tactic_display_order
+TA0043,Reconnaissance,1
+TA0042,Resource Development,2
+TA0001,Initial Access,3
+TA0002,Execution,4
+TA0003,Persistence,5
+TA0004,Privilege Escalation,6
+TA0005,Defense Evasion,7
+TA0006,Credential Access,8
+TA0007,Discovery,9
+TA0008,Lateral Movement,10
+TA0009,Collection,11
+TA0011,Command and Control,12
+TA0010,Exfiltration,13
+TA0040,Impact,14

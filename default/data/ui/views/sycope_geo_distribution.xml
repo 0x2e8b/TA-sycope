@@ -1,0 +1,149 @@
+<form version="1.1">
+  <label>Sycope NPM - Geographic Distribution</label>
+  <description>Geographic distribution of security alert activity based on IP geolocation</description>
+
+  <fieldset submitButton="true" autoRun="true">
+    <input type="time" token="time_range" searchWhenChanged="true">
+      <label>Time Range</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="severity_filter" searchWhenChanged="true">
+      <label>Severity</label>
+      <choice value="*">All</choice>
+      <choice value="critical">Critical</choice>
+      <choice value="high">High</choice>
+      <choice value="medium">Medium</choice>
+      <choice value="low">Low</choice>
+      <default>*</default>
+      <prefix>severity="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="dropdown" token="ip_direction" searchWhenChanged="true">
+      <label>IP Direction</label>
+      <choice value="dest_ip">Destination IPs</choice>
+      <choice value="src_ip">Source IPs</choice>
+      <default>dest_ip</default>
+    </input>
+  </fieldset>
+
+  <!-- Row 1: World Map -->
+  <row>
+    <panel>
+      <title>Alert Activity by Country</title>
+      <map>
+        <search>
+          <query>`sycope_index` $severity_filter$ $ip_direction$=*
+| iplocation $ip_direction$
+| where isnotnull(Country)
+| stats count AS alert_count by Country
+| geom geo_countries featureIdField=Country</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="mapping.type">choropleth</option>
+        <option name="mapping.choroplethLayer.colorBins">5</option>
+        <option name="mapping.choroplethLayer.colorMode">auto</option>
+        <option name="mapping.choroplethLayer.maximumColor">0xdc4e41</option>
+        <option name="mapping.choroplethLayer.minimumColor">0x53a051</option>
+        <option name="mapping.choroplethLayer.neutralPoint">0</option>
+        <option name="drilldown">all</option>
+        <option name="height">400</option>
+        <drilldown>
+          <set token="selected_country">$click.value$</set>
+        </drilldown>
+      </map>
+    </panel>
+  </row>
+
+  <!-- Row 2: Country with Sycope native data + iplocation -->
+  <row>
+    <panel>
+      <title>Top Countries by Alert Count</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $severity_filter$ $ip_direction$=*
+| iplocation $ip_direction$
+| eval geo_country = coalesce(Country, dest_country, src_country)
+| where isnotnull(geo_country)
+| stats count AS alert_count by geo_country
+| sort - alert_count
+| head 20</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">bar</option>
+        <option name="charting.axisTitleX.text">Alert Count</option>
+        <option name="charting.axisTitleY.text">Country</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.chart.showDataLabels">all</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Country Details</title>
+      <table>
+        <search>
+          <query>`sycope_index` $severity_filter$ $ip_direction$=*
+| iplocation $ip_direction$
+| eval geo_country = coalesce(Country, dest_country, src_country)
+| where isnotnull(geo_country)
+| stats count AS alert_count,
+        dc($ip_direction$) AS unique_ips,
+        dc(alert_name) AS alert_types,
+        values(severity) AS severities,
+        latest(_time) AS last_seen
+    by geo_country
+| sort - alert_count
+| eval last_seen = strftime(last_seen, "%Y-%m-%d %H:%M:%S")
+| rename geo_country AS "Country", alert_count AS "Alerts", unique_ips AS "Unique IPs", alert_types AS "Alert Types", severities AS "Severities", last_seen AS "Last Seen"</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">row</option>
+        <option name="count">20</option>
+        <format type="color" field="Alerts">
+          <colorPalette type="minMidMax" maxColor="#dc4e41" midColor="#f8be34" minColor="#53a051"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+
+  <!-- Row 3: Coverage Stats -->
+  <row>
+    <panel>
+      <title>Geographic Coverage</title>
+      <single>
+        <search>
+          <query>`sycope_index` $severity_filter$ $ip_direction$=*
+| iplocation $ip_direction$
+| eval has_geo = if(isnotnull(Country) OR isnotnull(dest_country) OR isnotnull(src_country), "With Geo Data", "Without Geo Data")
+| stats count by has_geo</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Top Cities (if available)</title>
+      <table>
+        <search>
+          <query>`sycope_index` $severity_filter$ $ip_direction$=*
+| iplocation $ip_direction$
+| where isnotnull(City)
+| stats count AS alert_count, dc($ip_direction$) AS unique_ips by Country, City
+| sort - alert_count
+| head 15
+| rename Country AS "Country", City AS "City", alert_count AS "Alerts", unique_ips AS "Unique IPs"</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="count">15</option>
+      </table>
+    </panel>
+  </row>
+</form>

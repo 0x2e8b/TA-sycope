@@ -1,0 +1,97 @@
+alert_name,rule_id,rule_type,mitre_tactic,mitre_technique,mitre_technique_id,mitre_subtechnique,default_severity,default_score
+Horizontal Scan,Reconnaissance_004,SECURITY,Reconnaissance,Active Scanning,T1595,T1595.001: Scanning IP Blocks,high,7
+Vertical Scan,Reconnaissance_003,SECURITY,Reconnaissance,Active Scanning,T1595,T1595.001: Scanning IP Blocks,high,8
+P2P Activity,Initial Access_008,SECURITY,Initial Access,Drive-by Compromise,T1189,,info,2
+Database Port Exposed to Internet,Initial Access_012,SECURITY,Initial Access,Exploit Public-Facing Application,T1190,,high,9
+High IP Count on Device,Initial Access_009,SECURITY,Initial Access,Hardware Additions,T1200,,medium,5
+Unknown Device Detected,Initial Access_011,SECURITY,Initial Access,Hardware Additions,T1200,,medium,5
+Watch Device Detected,Initial Access_010,SECURITY,Initial Access,Hardware Additions,T1200,,medium,5
+Suspicious IP - Phishing,Initial Access_006,SECURITY,Initial Access,Phishing,T1566,,critical,9
+Suspicious IP - Spam,Initial Access_007,SECURITY,Initial Access,Phishing,T1566,,low,4
+Web Shell Activity Pattern,Persistence_001,SECURITY,Persistence,Server Software Component: Web Shell,T1505.003,,high,8
+Suspicious SSH Protocol Change,Credential Access_007,SECURITY,Credential Access,Adversary-in-the-Middle,T1557,T1557.002: ARP Cache Poisoning,high,7
+Unauthorized LLMNR/NetBIOS Activity,Credential Access_003,SECURITY,Credential Access,Adversary-in-the-Middle,T1557,T1557.002: ARP Cache Poisoning,medium,5
+Brute Force Attack,Credential Access_004,SECURITY,Credential Access,Brute Force,T1110,,high,8
+RDP Brute Force (Slow),Credential Access_010,SECURITY,Credential Access,Brute Force,T1110,,high,7
+SSH Brute Force (Slow),Credential Access_011,SECURITY,Credential Access,Brute Force,T1110,,high,7
+LDAP to External,Credential Access_009,SECURITY,Credential Access,OS Credential Dumping: DCSync,T1003.006,,high,8
+Kerberos Traffic to External,Credential Access_008,SECURITY,Credential Access,Steal or Forge Kerberos Tickets: Kerberoasting,T1558.003,,high,9
+APIPA address assignment,Discovery_010,SECURITY,Discovery,System Network Configuration Discovery,T1016,,medium,5
+Abnormal flows ratios,Discovery_009,SECURITY,Discovery,System Network Configuration Discovery,T1016,,low,4
+Unauthorized DHCP Activity,Discovery_022,SECURITY,Discovery,System Network Configuration Discovery,T1016,,low,4
+Unauthorized DNS Activity,Discovery_023,SECURITY,Discovery,System Network Configuration Discovery,T1016,,low,4
+Unauthorized NFS Export Data,Discovery_020,SECURITY,Discovery,System Network Configuration Discovery,T1016,,low,4
+High Connection Failure Rate,Discovery_015,SECURITY,Discovery,Network Service Discovery,T1046,,high,5
+Multiple Protocols Same Destination,Discovery_014,SECURITY,Discovery,Network Service Discovery,T1046,,high,5
+Multicast DNS from Internet,Discovery_012,SECURITY,Discovery,Network Service Scanning,T1046,,low,4
+Potential Virus Outbreak,Discovery_002,SECURITY,Discovery,Network Service Scanning,T1046,,high,7
+Suspicious IP - Scanner,Discovery_008,SECURITY,Discovery,Network Service Scanning,T1046,,medium,6
+Unprotected Docker Daemon,Discovery_015,SECURITY,Discovery,Network Service Scanning,T1046,,low,4
+Unauthorized Internet Access,Discovery_010,SECURITY,Discovery,Permission Groups Discovery,T1069,,low,4
+Excessive ICMP Requests,Discovery_012,SECURITY,Discovery,System Information Discovery,T1082,,low,3
+NetBIOS/SMB Discovery,Discovery_016,SECURITY,Discovery,Network Share Discovery,T1135,,high,6
+Unauthorized LDAP Activity,Discovery_019,SECURITY,Discovery,Domain Trust Discovery,T1482,,high,7
+Suspicious Host,Lateral Movement_006,SECURITY,Lateral Movement,Exploitation of Remote Services,T1210,,high,8
+Possible Lateral Movement,Lateral Movement_008,SECURITY,Lateral Movement,Remote Services,T1021,,high,7
+Rogue RDP Access,Lateral Movement_003,SECURITY,Lateral Movement,Remote Services,T1021,,high,7
+Telnet to External,Lateral Movement_010,SECURITY,Lateral Movement,Remote Services,T1021,,high,8
+Unauthorized RDP from/to the Internet,Lateral Movement_009,SECURITY,Lateral Movement,Remote Services,T1021,,high,7
+IP Address Conflict,Collection_002,SECURITY,Collection,Adversary-in-the-Middle,T1557,T1557.002: ARP Cache Poisoning,low,3
+Data Staging Detection,Collection_003,SECURITY,Collection,Data Staged: Local Data Staging,T1074.001,,high,6
+Cleartext Application,Command and Control_015,SECURITY,Command and Control,Application Layer Protocol,T1071,,medium,6
+Email Worm,Command and Control_035,SECURITY,Command and Control,Application Layer Protocol,T1071,T1071.003: Mail Protocols,high,7
+Frequent Short-Lived Connections,Command and Control_040,SECURITY,Command and Control,Application Layer Protocol,T1071,,low,3
+IRC Traffic Detected,Command and Control_047,SECURITY,Command and Control,Application Layer Protocol,T1071,,high,8
+Ingress from High-Risk Countries,Command and Control_039,SECURITY,Command and Control,Application Layer Protocol,T1071,,high,7
+IoT/OT Device Discovered,Command and Control_004,SECURITY,Command and Control,Application Layer Protocol,T1071,,medium,5
+Long-Duration Session,Command and Control_045,SECURITY,Command and Control,Application Layer Protocol,T1071,,high,5
+Repeated Connection (C2 Polling),Command and Control_049,SECURITY,Command and Control,Application Layer Protocol,T1071,,high,6
+Suspicious Domain - Malware via DNS,Command and Control_012,SECURITY,Command and Control,Application Layer Protocol,T1071,,critical,10
+Suspicious Domain - Malware via HTTP,Command and Control_013,SECURITY,Command and Control,Application Layer Protocol,T1071,,critical,10
+Suspicious IP - Malicious,Command and Control_031,SECURITY,Command and Control,Application Layer Protocol,T1071,,critical,10
+Suspicious IP - Open DNS,Command and Control_032,SECURITY,Command and Control,Application Layer Protocol,T1071,,low,3
+Suspicious IP - Sycope Community,Command and Control_029,SECURITY,Command and Control,Application Layer Protocol,T1071,,high,8
+Suspicious JA3 Fingerprint,Command and Control_014,SECURITY,Command and Control,Application Layer Protocol,T1071,,critical,9
+Suspicious Small Payload Beaconing,Command and Control_046,SECURITY,Command and Control,Application Layer Protocol,T1071,,high,6
+Suspicious Port - Allowlist,Command and Control_016,SECURITY,Command and Control,Non-Standard Port,T1571,,medium,6
+Suspicious Port - Blocklist,Command and Control_011,SECURITY,Command and Control,Non-Standard Port,T1571,,medium,6
+Suspicious Protocol Mixing,Command and Control_041,SECURITY,Command and Control,Protocol Tunneling,T1572,,medium,6
+Proxy/SOCKS Traffic Detected,Command and Control_048,SECURITY,Command and Control,Proxy,T1090,,high,6
+Suspicious IP - Proxy,Command and Control_033,SECURITY,Command and Control,Proxy,T1090,,medium,6
+Suspicious IP - TOR,Command and Control_034,SECURITY,Command and Control,Proxy,T1090,,high,7
+Abnormal DNS Query Limit,Exfiltration_011,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+Abnormal DNS Response Limit,Exfiltration_006,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+DNS Transfer Limit,Exfiltration_003,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+High Data Transfer (Int),Exfiltration_028,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+High Data Transfer (Int<-> Ext),Exfiltration_029,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+Large Google Drive Upload Traffic,Exfiltration_007,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+Large Size ICMP Packets,Exfiltration_031,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+Large Size TCP Packets,Exfiltration_032,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+Large Size UDP Packets,Exfiltration_033,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+Possible SPAM activity,Exfiltration_004,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+Unexpected decrease in number of bytes,Exfiltration_010,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+Unexpected increase in BPS,Exfiltration_011,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+Unexpected increase in PPS,Exfiltration_015,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+Unexpected increase in number of packets,Exfiltration_012,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+Unexpected increase in number of bytes,Exfiltration_013,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+Unexpected increase in number of flows,Exfiltration_014,SECURITY,Exfiltration,Data Transfer Size Limits,T1030,,high,7
+FTP Data Exfiltration,Exfiltration_025,SECURITY,Exfiltration,Exfiltration Over Alternative Protocol: Unencrypted Non-C2,T1048.003,,high,7
+Abnormal Upload/Download Ratio,Exfiltration_023,SECURITY,Exfiltration,Exfiltration Over C2 Channel,T1041,,high,6
+Large Data Upload to External,Exfiltration_024,SECURITY,Exfiltration,Exfiltration Over C2 Channel,T1041,,high,7
+SMB Traffic to External Networks,Exfiltration_016,SECURITY,Exfiltration,Exfiltration Over Web Service,T1567,,low,3
+DDoS Attack,Impact_036,SECURITY,Impact,Endpoint Denial of Service,T1499,,critical,9
+DDoS DNS Amplification Attack,Impact_037,SECURITY,Impact,Endpoint Denial of Service,T1499,,critical,9
+DDoS Protocol Flood,Impact_038,SECURITY,Impact,Endpoint Denial of Service,T1499,,critical,10
+DoS Attack,Impact_039,SECURITY,Impact,Endpoint Denial of Service,T1499,,critical,10
+Botnet Attack via DNS,Impact_041,SECURITY,Impact,Network Denial of Service,T1498,T1498.002: Reflection Amplification,high,7
+Possible DNS Reflection Attack,Impact_047,SECURITY,Impact,Network Denial of Service,T1498,T1498.002: Reflection Amplification,high,8
+SYN Flood Attack,Impact_040,SECURITY,Impact,Network Denial of Service,T1498,,medium,5
+Crypto Mining Pool Connection,Impact_048,SECURITY,Impact,Resource Hijacking,T1496,,high,8
+Suspicious IP - Cryptomining,Impact_035,SECURITY,Impact,Resource Hijacking,T1496,,medium,6
+DNS Servers Discovery,,VISIBILITY,,,,,,1
+High Client Network Latency,,PERFORMANCE,,,,,,5
+High Initial Server Response Time,,PERFORMANCE,,,,,,5
+High Server Network Latency,,PERFORMANCE,,,,,,5
+Initial connections from Public IPs,,VISIBILITY,,,,,,5
+Only SYN Client TCP Flag,,VISIBILITY,,,,,,5
+Only SYN Server TCP Flag,,VISIBILITY,,,,,,5

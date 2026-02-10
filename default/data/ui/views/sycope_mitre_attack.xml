@@ -1,0 +1,259 @@
+<form version="1.1">
+  <label>Sycope NPM - MITRE ATT&amp;CK Mapping</label>
+  <description>Map Sycope security alerts to MITRE ATT&amp;CK framework tactics and techniques</description>
+
+  <fieldset submitButton="true" autoRun="true">
+    <input type="time" token="time_range" searchWhenChanged="true">
+      <label>Time Range</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="severity_filter" searchWhenChanged="true">
+      <label>Severity</label>
+      <choice value="*">All</choice>
+      <choice value="critical">Critical</choice>
+      <choice value="high">High</choice>
+      <choice value="medium">Medium</choice>
+      <choice value="low">Low</choice>
+      <default>*</default>
+      <prefix>severity="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="dropdown" token="tactic_filter" searchWhenChanged="true">
+      <label>MITRE Tactic</label>
+      <choice value="*">All Tactics</choice>
+      <default>*</default>
+      <prefix>mitre_tactic="</prefix>
+      <suffix>"</suffix>
+      <search>
+        <query>| inputlookup sycope_mitre_tactics | sort tactic_display_order | fields tactic_name</query>
+      </search>
+      <fieldForLabel>tactic_name</fieldForLabel>
+      <fieldForValue>tactic_name</fieldForValue>
+    </input>
+    <input type="text" token="mitre_technique_filter" searchWhenChanged="true">
+      <label>MITRE Technique ID</label>
+      <default>*</default>
+      <prefix>mitre_technique_id="</prefix>
+      <suffix>"</suffix>
+    </input>
+  </fieldset>
+
+  <!-- Row 1: Summary Stats -->
+  <row>
+    <panel>
+      <title>Unique Tactics Observed</title>
+      <single>
+        <search>
+          <query>`sycope_index` $severity_filter$ $tactic_filter$ mitre_tactic=*
+| stats dc(mitre_tactic) AS unique_tactics</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Unique Techniques Observed</title>
+      <single>
+        <search>
+          <query>`sycope_index` $severity_filter$ $tactic_filter$ mitre_technique_id=*
+| stats dc(mitre_technique_id) AS unique_techniques</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Total MITRE-Mapped Alerts</title>
+      <single>
+        <search>
+          <query>`sycope_index` $severity_filter$ $tactic_filter$ mitre_technique_id=*
+| stats count</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Coverage (Techniques / Known)</title>
+      <single>
+        <search>
+          <query>`sycope_index` $severity_filter$ $tactic_filter$ mitre_technique_id=*
+| stats dc(mitre_technique_id) AS observed
+| appendcols [| inputlookup sycope_mitre_techniques | stats dc(mitre_technique_id) AS total]
+| eval coverage = observed . " / " . total</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="field">coverage</option>
+      </single>
+    </panel>
+  </row>
+
+  <!-- Row 2: MITRE ATT&CK Matrix - Techniques per Tactic -->
+  <row>
+    <panel>
+      <title>MITRE ATT&amp;CK Matrix - Observed Techniques by Tactic (Kill Chain Order)</title>
+      <table>
+        <search>
+          <query>`sycope_index` $severity_filter$ mitre_technique_id=* $mitre_technique_filter$
+| stats count AS alert_count by mitre_tactic, mitre_technique_id, mitre_technique
+| lookup sycope_mitre_techniques mitre_technique_id OUTPUT mitre_subtechnique
+| lookup sycope_mitre_tactics tactic_name AS mitre_tactic OUTPUT tactic_display_order, tactic_id
+| eval technique_label = mitre_technique_id . " " . mitre_technique
+| eval technique_label = if(isnotnull(mitre_subtechnique) AND mitre_subtechnique!="", technique_label . " (" . mitre_subtechnique . ")", technique_label)
+| sort tactic_display_order, - alert_count
+| stats list(technique_label) AS techniques, sum(alert_count) AS total_alerts by mitre_tactic, tactic_id, tactic_display_order
+| sort tactic_display_order
+| eval techniques = mvjoin(techniques, "
+")
+| fields mitre_tactic, tactic_id, techniques, total_alerts
+| rename mitre_tactic AS "Tactic", tactic_id AS "Tactic ID", techniques AS "Observed Techniques", total_alerts AS "Alerts"</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">row</option>
+        <option name="count">14</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Alerts">
+          <colorPalette type="minMidMax" maxColor="#dc4e41" midColor="#f8be34" minColor="#53a051"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+        <drilldown>
+          <set token="form.tactic_filter">$row.Tactic$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+
+  <!-- Row 3: Heatmap and Tactic Distribution side by side -->
+  <row>
+    <panel>
+      <title>Alert Distribution by Tactic (Kill Chain Order)</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $severity_filter$ mitre_tactic=*
+| stats count by mitre_tactic
+| lookup sycope_mitre_tactics tactic_name AS mitre_tactic OUTPUT tactic_display_order
+| sort tactic_display_order</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.axisTitleX.text">MITRE ATT&amp;CK Tactic</option>
+        <option name="charting.axisTitleY.text">Alert Count</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.chart.showDataLabels">all</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Severity Distribution by Tactic</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $severity_filter$ $tactic_filter$ mitre_tactic=*
+| stats count by mitre_tactic, severity
+| lookup sycope_mitre_tactics tactic_name AS mitre_tactic OUTPUT tactic_display_order
+| sort tactic_display_order</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">bar</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.axisTitleX.text">Alert Count</option>
+        <option name="charting.axisTitleY.text">Tactic</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.fieldColors">{"critical": 0xdc4e41, "high": 0xf1813f, "medium": 0xf8be34, "low": 0x53a051, "info": 0x006d9c}</option>
+      </chart>
+    </panel>
+  </row>
+
+  <!-- Row 4: Technique Detail Table -->
+  <row>
+    <panel>
+      <title>Technique Details</title>
+      <table>
+        <search>
+          <query>`sycope_index` $severity_filter$ $tactic_filter$ mitre_technique_id=* $mitre_technique_filter$
+| stats count AS alert_count,
+        dc(src_ip) AS unique_sources,
+        dc(dest_ip) AS unique_targets,
+        values(alert_name) AS alert_rules,
+        values(severity) AS severities,
+        latest(_time) AS last_seen
+    by mitre_tactic, mitre_technique, mitre_technique_id
+| lookup sycope_mitre_techniques mitre_technique_id OUTPUT mitre_subtechnique, tactic_id AS mitre_tactic_id
+| lookup sycope_mitre_tactics tactic_name AS mitre_tactic OUTPUT tactic_display_order
+| sort tactic_display_order, - alert_count
+| eval last_seen = strftime(last_seen, "%Y-%m-%d %H:%M:%S")
+| eval subtechnique = if(isnotnull(mitre_subtechnique) AND mitre_subtechnique!="", mitre_subtechnique, "-")
+| fields - tactic_display_order
+| rename mitre_tactic AS "Tactic", mitre_tactic_id AS "Tactic ID", mitre_technique AS "Technique", mitre_technique_id AS "MITRE ID", subtechnique AS "Sub-technique", alert_count AS "Alerts", unique_sources AS "Unique Sources", unique_targets AS "Unique Targets", alert_rules AS "Alert Rules", severities AS "Severities", last_seen AS "Last Seen"</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">row</option>
+        <option name="count">20</option>
+        <format type="color" field="Alerts">
+          <colorPalette type="minMidMax" maxColor="#dc4e41" midColor="#f8be34" minColor="#53a051"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+        <drilldown>
+          <link target="_blank">/app/TA-sycope/sycope_alert_detail?form.mitre_filter=$row.MITRE ID$</link>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+
+  <!-- Row 5: MITRE Timeline -->
+  <row>
+    <panel>
+      <title>MITRE Technique Activity Over Time</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $severity_filter$ $tactic_filter$ mitre_technique_id=* $mitre_technique_filter$
+| timechart span=1h count by mitre_technique limit=10</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY.text">Alert Count</option>
+      </chart>
+    </panel>
+  </row>
+
+  <!-- Row 6: Alert Reference - Full MITRE Coverage from Templates -->
+  <row>
+    <panel>
+      <title>Sycope Alert Rule Reference (All 96 Templates)</title>
+      <table>
+        <search>
+          <query>| inputlookup sycope_alert_reference where rule_type="SECURITY"
+| lookup sycope_mitre_tactics tactic_name AS mitre_tactic OUTPUT tactic_display_order
+| sort tactic_display_order, mitre_technique, alert_name
+| fields alert_name, rule_id, mitre_tactic, mitre_technique, mitre_technique_id, mitre_subtechnique, default_severity, default_score
+| rename alert_name AS "Alert Name", rule_id AS "Rule ID", mitre_tactic AS "Tactic", mitre_technique AS "Technique", mitre_technique_id AS "MITRE ID", mitre_subtechnique AS "Sub-technique", default_severity AS "Default Severity", default_score AS "Risk Score"</query>
+        </search>
+        <option name="drilldown">row</option>
+        <option name="count">20</option>
+        <format type="color" field="Default Severity">
+          <colorPalette type="map">{"critical": #dc4e41, "high": #f1813f, "medium": #f8be34, "low": #53a051, "info": #006d9c}</colorPalette>
+        </format>
+        <format type="color" field="Risk Score">
+          <colorPalette type="minMidMax" maxColor="#dc4e41" midColor="#f8be34" minColor="#53a051"></colorPalette>
+          <scale type="minMidMax" minValue="1" maxValue="10"></scale>
+        </format>
+        <drilldown>
+          <link target="_blank">/app/TA-sycope/sycope_alert_detail?form.alert_name_filter=$row.Alert Name$</link>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+</form>

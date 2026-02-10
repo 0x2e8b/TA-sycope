@@ -1,0 +1,29 @@
+[]
+export = system
+
+[eventtypes]
+export = system
+
+[props]
+export = system
+
+[transforms]
+export = system
+
+[tags]
+export = system
+
+[lookups]
+export = system
+
+[savedsearches]
+export = system
+
+[views]
+export = system
+
+[nav]
+export = system
+
+[macros]
+export = system

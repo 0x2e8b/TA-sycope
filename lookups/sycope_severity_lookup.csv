@@ -1,0 +1,9 @@
+severity_original,severity_normalized,severity_weight
+Critical,critical,10
+High,high,8
+Medium,medium,5
+Low,low,2
+Minor,low,2
+Informational,informational,1
+Info,informational,1
+Major,high,8

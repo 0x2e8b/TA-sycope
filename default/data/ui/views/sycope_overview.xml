@@ -1,0 +1,194 @@
+<form version="1.1">
+  <label>Sycope NPM - Security Alert Overview</label>
+  <description>Executive summary of Sycope NPM security alerts</description>
+
+  <fieldset submitButton="true" autoRun="true">
+    <input type="time" token="time_range" searchWhenChanged="true">
+      <label>Time Range</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="severity_filter" searchWhenChanged="true">
+      <label>Severity</label>
+      <choice value="*">All</choice>
+      <choice value="critical">Critical</choice>
+      <choice value="high">High</choice>
+      <choice value="medium">Medium</choice>
+      <choice value="low">Low</choice>
+      <default>*</default>
+      <prefix>severity="</prefix>
+      <suffix>"</suffix>
+    </input>
+  </fieldset>
+
+  <!-- Row 1: Single Value Panels -->
+  <row>
+    <panel>
+      <title>Total Alerts</title>
+      <single>
+        <search>
+          <query>`sycope_index` $severity_filter$
+| stats count</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">block</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[10,50,100,500]</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Critical / High Alerts</title>
+      <single>
+        <search>
+          <query>`sycope_index` (severity="critical" OR severity="high")
+| stats count</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">block</option>
+        <option name="rangeColors">["0x53a051","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[5,20]</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Unique Source IPs</title>
+      <single>
+        <search>
+          <query>`sycope_index` $severity_filter$ src_ip=*
+| stats dc(src_ip) AS unique_sources</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Unique Destination IPs</title>
+      <single>
+        <search>
+          <query>`sycope_index` $severity_filter$ dest_ip=*
+| stats dc(dest_ip) AS unique_destinations</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+  </row>
+
+  <!-- Row 2: Severity Breakdown + Timeline -->
+  <row>
+    <panel>
+      <title>Alerts by Severity</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $severity_filter$
+| stats count by severity
+| sort - count</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.seriesColors">[0xdc4e41,0xf1813f,0xf8be34,0x53a051,0x0877a6]</option>
+        <drilldown>
+          <set token="severity_filter">severity="$click.value$"</set>
+        </drilldown>
+      </chart>
+    </panel>
+    <panel>
+      <title>Alert Timeline</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $severity_filter$
+| timechart span=1h count by severity</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.seriesColors">[0xdc4e41,0xf1813f,0xf8be34,0x53a051,0x0877a6]</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY.text">Alert Count</option>
+      </chart>
+    </panel>
+  </row>
+
+  <!-- Row 3: Top Alert Types + Top MITRE Techniques -->
+  <row>
+    <panel>
+      <title>Top 10 Alert Types</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $severity_filter$
+| stats count by alert_name
+| sort - count
+| head 10</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">bar</option>
+        <option name="charting.axisTitleX.text">Count</option>
+        <option name="charting.axisTitleY.text">Alert Name</option>
+        <option name="charting.legend.placement">none</option>
+        <drilldown>
+          <link target="_blank">/app/TA-sycope/sycope_alert_detail?form.alert_name_filter=$click.value$</link>
+        </drilldown>
+      </chart>
+    </panel>
+    <panel>
+      <title>Top 10 MITRE ATT&amp;CK Techniques</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $severity_filter$ mitre_technique=*
+| stats count by mitre_technique, mitre_technique_id
+| eval label = mitre_technique_id . " - " . mitre_technique
+| sort - count
+| head 10</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">bar</option>
+        <option name="charting.axisTitleX.text">Count</option>
+        <option name="charting.legend.placement">none</option>
+        <drilldown>
+          <link target="_blank">/app/TA-sycope/sycope_mitre_attack?form.mitre_technique_filter=$row.mitre_technique_id$</link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+
+  <!-- Row 4: Recent Alerts Table -->
+  <row>
+    <panel>
+      <title>Recent Alerts</title>
+      <table>
+        <search>
+          <query>`sycope_index` $severity_filter$
+| table _time, alert_name, severity, src_ip, dest_ip, dest_port, mitre_tactic, mitre_technique, mitre_technique_id, alert_id
+| sort - _time
+| head 50</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">row</option>
+        <option name="count">20</option>
+        <option name="wrap">false</option>
+        <format type="color" field="severity">
+          <colorPalette type="map">{"critical":#dc4e41,"high":#f1813f,"medium":#f8be34,"low":#53a051,"informational":#0877a6}</colorPalette>
+        </format>
+        <drilldown>
+          <link target="_blank">/app/TA-sycope/sycope_alert_detail?form.alert_id_filter=$row.alert_id$</link>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+</form>

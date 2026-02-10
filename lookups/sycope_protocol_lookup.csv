@@ -1,0 +1,11 @@
+protocol_number,protocol_name
+1,icmp
+2,igmp
+6,tcp
+17,udp
+47,gre
+50,esp
+51,ah
+58,icmpv6
+89,ospf
+132,sctp

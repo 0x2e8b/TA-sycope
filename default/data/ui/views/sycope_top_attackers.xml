@@ -1,0 +1,183 @@
+<form version="1.1">
+  <label>Sycope NPM - Top Attackers &amp; Targets</label>
+  <description>Identify the most active source (attacker) and destination (target) IP addresses</description>
+
+  <fieldset submitButton="true" autoRun="true">
+    <input type="time" token="time_range" searchWhenChanged="true">
+      <label>Time Range</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="severity_filter" searchWhenChanged="true">
+      <label>Severity</label>
+      <choice value="*">All</choice>
+      <choice value="critical">Critical</choice>
+      <choice value="high">High</choice>
+      <choice value="medium">Medium</choice>
+      <choice value="low">Low</choice>
+      <default>*</default>
+      <prefix>severity="</prefix>
+      <suffix>"</suffix>
+    </input>
+  </fieldset>
+
+  <!-- Row 1: Top Source IPs + Top Destination IPs -->
+  <row>
+    <panel>
+      <title>Top 20 Source IPs (Attackers)</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $severity_filter$ src_ip=*
+| stats count AS alert_count by src_ip
+| sort - alert_count
+| head 20</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">bar</option>
+        <option name="charting.axisTitleX.text">Alert Count</option>
+        <option name="charting.axisTitleY.text">Source IP</option>
+        <option name="charting.legend.placement">none</option>
+        <drilldown>
+          <link target="_blank">/app/TA-sycope/sycope_alert_detail?form.src_filter=$click.value$</link>
+        </drilldown>
+      </chart>
+    </panel>
+    <panel>
+      <title>Top 20 Destination IPs (Targets)</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $severity_filter$ dest_ip=*
+| stats count AS alert_count by dest_ip
+| sort - alert_count
+| head 20</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">bar</option>
+        <option name="charting.axisTitleX.text">Alert Count</option>
+        <option name="charting.axisTitleY.text">Destination IP</option>
+        <option name="charting.legend.placement">none</option>
+        <drilldown>
+          <link target="_blank">/app/TA-sycope/sycope_alert_detail?form.dest_filter=$click.value$</link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+
+  <!-- Row 2: Source IP Detail + Destination IP Detail -->
+  <row>
+    <panel>
+      <title>Source IP Details</title>
+      <table>
+        <search>
+          <query>`sycope_index` $severity_filter$ src_ip=*
+| stats count AS alert_count,
+        dc(alert_name) AS unique_alert_types,
+        dc(dest_ip) AS unique_destinations,
+        values(severity) AS severities,
+        latest(_time) AS last_seen
+    by src_ip
+| sort - alert_count
+| head 20
+| eval last_seen = strftime(last_seen, "%Y-%m-%d %H:%M:%S")
+| rename src_ip AS "Source IP", alert_count AS "Alerts", unique_alert_types AS "Alert Types", unique_destinations AS "Unique Dests", severities AS "Severities", last_seen AS "Last Seen"</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">row</option>
+        <option name="count">10</option>
+        <format type="color" field="Alerts">
+          <colorPalette type="minMidMax" maxColor="#dc4e41" midColor="#f8be34" minColor="#53a051"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+        <drilldown>
+          <link target="_blank">/app/TA-sycope/sycope_alert_detail?form.src_filter=$row.Source IP$</link>
+        </drilldown>
+      </table>
+    </panel>
+    <panel>
+      <title>Destination IP Details</title>
+      <table>
+        <search>
+          <query>`sycope_index` $severity_filter$ dest_ip=*
+| stats count AS alert_count,
+        dc(alert_name) AS unique_alert_types,
+        dc(src_ip) AS unique_sources,
+        values(dest_port) AS target_ports,
+        latest(_time) AS last_seen
+    by dest_ip
+| sort - alert_count
+| head 20
+| eval last_seen = strftime(last_seen, "%Y-%m-%d %H:%M:%S")
+| rename dest_ip AS "Destination IP", alert_count AS "Alerts", unique_alert_types AS "Alert Types", unique_sources AS "Unique Sources", target_ports AS "Target Ports", last_seen AS "Last Seen"</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">row</option>
+        <option name="count">10</option>
+        <format type="color" field="Alerts">
+          <colorPalette type="minMidMax" maxColor="#dc4e41" midColor="#f8be34" minColor="#53a051"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+        <drilldown>
+          <link target="_blank">/app/TA-sycope/sycope_alert_detail?form.dest_filter=$row.Destination IP$</link>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+
+  <!-- Row 3: Communication Pairs -->
+  <row>
+    <panel>
+      <title>Top Communication Pairs (Source -&gt; Destination)</title>
+      <table>
+        <search>
+          <query>`sycope_index` $severity_filter$ src_ip=* dest_ip=*
+| stats count AS alert_count,
+        values(alert_name) AS alert_types,
+        values(dest_port) AS ports,
+        values(severity) AS severities,
+        latest(_time) AS last_seen
+    by src_ip, dest_ip
+| sort - alert_count
+| head 20
+| eval last_seen = strftime(last_seen, "%Y-%m-%d %H:%M:%S")
+| rename src_ip AS "Source IP", dest_ip AS "Destination IP", alert_count AS "Alerts", alert_types AS "Alert Types", ports AS "Ports", severities AS "Severities", last_seen AS "Last Seen"</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="drilldown">row</option>
+        <option name="count">20</option>
+        <format type="color" field="Alerts">
+          <colorPalette type="minMidMax" maxColor="#dc4e41" midColor="#f8be34" minColor="#53a051"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+        <drilldown>
+          <link target="_blank">/app/TA-sycope/sycope_alert_detail?form.src_filter=$row.Source IP$&amp;form.dest_filter=$row.Destination IP$</link>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+
+  <!-- Row 4: Source IP Activity Over Time -->
+  <row>
+    <panel>
+      <title>Top Source IP Activity Over Time</title>
+      <chart>
+        <search>
+          <query>`sycope_index` $severity_filter$ src_ip=*
+| timechart span=1h count by src_ip limit=10</query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY.text">Alert Count</option>
+      </chart>
+    </panel>
+  </row>
+</form>

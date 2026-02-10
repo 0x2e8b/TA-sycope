@@ -1,0 +1,31 @@
+mitre_technique_id,mitre_technique,mitre_tactic,mitre_subtechnique,tactic_id
+T1595,Active Scanning,Reconnaissance,T1595.001: Scanning IP Blocks,TA0043
+T1189,Drive-by Compromise,Initial Access,,TA0001
+T1190,Exploit Public-Facing Application,Initial Access,,TA0001
+T1200,Hardware Additions,Initial Access,,TA0001
+T1566,Phishing,Initial Access,,TA0001
+T1505.003,Server Software Component: Web Shell,Persistence,,TA0003
+T1557,Adversary-in-the-Middle,Credential Access,T1557.002: ARP Cache Poisoning,TA0006
+T1110,Brute Force,Credential Access,,TA0006
+T1003.006,OS Credential Dumping: DCSync,Credential Access,,TA0006
+T1558.003,Steal or Forge Kerberos Tickets: Kerberoasting,Credential Access,,TA0006
+T1016,System Network Configuration Discovery,Discovery,,TA0007
+T1046,Network Service Discovery,Discovery,,TA0007
+T1069,Permission Groups Discovery,Discovery,,TA0007
+T1082,System Information Discovery,Discovery,,TA0007
+T1135,Network Share Discovery,Discovery,,TA0007
+T1482,Domain Trust Discovery,Discovery,,TA0007
+T1021,Remote Services,Lateral Movement,,TA0008
+T1210,Exploitation of Remote Services,Lateral Movement,,TA0008
+T1074.001,Data Staged: Local Data Staging,Collection,,TA0009
+T1071,Application Layer Protocol,Command and Control,T1071.003: Mail Protocols,TA0011
+T1090,Proxy,Command and Control,,TA0011
+T1571,Non-Standard Port,Command and Control,,TA0011
+T1572,Protocol Tunneling,Command and Control,,TA0011
+T1030,Data Transfer Size Limits,Exfiltration,,TA0010
+T1041,Exfiltration Over C2 Channel,Exfiltration,,TA0010
+T1048.003,Exfiltration Over Alternative Protocol: Unencrypted Non-C2,Exfiltration,,TA0010
+T1567,Exfiltration Over Web Service,Exfiltration,,TA0010
+T1496,Resource Hijacking,Impact,,TA0040
+T1498,Network Denial of Service,Impact,T1498.002: Reflection Amplification,TA0040
+T1499,Endpoint Denial of Service,Impact,,TA0040

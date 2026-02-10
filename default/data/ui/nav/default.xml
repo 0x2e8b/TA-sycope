@@ -1,0 +1,8 @@
+<nav color="#1B2A4A">
+  <view name="sycope_overview" default="true" />
+  <view name="sycope_mitre_attack" />
+  <view name="sycope_top_attackers" />
+  <view name="sycope_geo_distribution" />
+  <view name="sycope_alert_trends" />
+  <view name="sycope_alert_detail" />
+</nav>
