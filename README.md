@@ -7,6 +7,7 @@
 ## Overview
 
 TA-sycope is a Splunk Technology Add-on that enables ingestion, parsing, and visualization of security alerts from **Sycope NPM** (Network Performance Monitoring). Sycope analyzes NetFlow/sFlow data in real-time and generates security alerts with MITRE ATT&CK framework mapping.
+<img width="1470" height="1551" alt="image" src="https://github.com/user-attachments/assets/6b954cfc-06ca-4871-9577-4af5ca910b32" />
 
 ### Supported Sycope NPM Versions
 
