@@ -20,6 +20,7 @@ TA-sycope is a Splunk Technology Add-on that enables ingestion, parsing, and vis
 - **MITRE ATT&CK integration**: 10 tactics, 30 techniques, subtechnique mapping
 - **96 alert templates**: Complete reference lookup with severity, score, and MITRE mappings
 - **6 built-in dashboards**: Overview, MITRE matrix, Top Attackers, Geo Distribution, Trends, Alert Detail
+- **Pivot to Sycope**: one click from an alert in Splunk opens the Sycope console filtered to that IP and time window
 - **Unified field namespace**: Both formats normalize to common field names for consistent searching
 
 ---
@@ -192,6 +193,35 @@ iseval = 0
 - Full alert detail table with all extracted fields
 - Raw event viewer for selected alert
 - Field extraction table for individual alerts
+
+---
+
+## Pivot to Sycope Console
+
+Every Sycope event in Splunk gets workflow actions that open the Sycope console on the **Alerts** view, filtered
+to the alert's IP and a +/-15 minute window around it:
+
+| Action | Sycope filter |
+|--------|---------------|
+| Sycope: investigate source IP | alerts where the source IP is client or server |
+| Sycope: investigate destination IP | alerts where the destination IP is client or server |
+| Sycope: investigate conversation | alerts between the source and the destination IP |
+
+They are in the event's **Event Actions** menu, and the IP ones also in the menu of the `src_ip` / `dest_ip`
+field.
+
+### Setup
+
+Set your Sycope address in the links (replace `SYCOPE_HOST`). Keep the change in `local/` so an app upgrade
+does not overwrite it:
+
+```bash
+cd $SPLUNK_HOME/etc/apps/TA-sycope
+mkdir -p local
+sed 's/SYCOPE_HOST/sycope.example.com/g' default/workflow_actions.conf > local/workflow_actions.conf
+```
+
+Then restart Splunk (or reload `/debug/refresh`). The analyst needs a Sycope login; the link opens in a new tab.
 
 ---
 
@@ -368,6 +398,11 @@ TA-sycope maps to the `IDS_Attacks` data model:
 ---
 
 ## Release Notes
+
+### Version 1.1.0
+- Pivot to the Sycope console from Splunk events (workflow actions on source IP, destination IP, conversation)
+- Aggregated alerts (JSON): `clientIps` / `serverIps` lists are split into multivalue `src_ip` / `dest_ip`
+- Sycope `Info` severity is normalized to the CIM value `informational`
 
 ### Version 1.0.0
 - Initial release

@@ -168,7 +168,7 @@
         <option name="charting.axisTitleX.text">Alert Count</option>
         <option name="charting.axisTitleY.text">Tactic</option>
         <option name="charting.legend.placement">bottom</option>
-        <option name="charting.fieldColors">{"critical": 0xdc4e41, "high": 0xf1813f, "medium": 0xf8be34, "low": 0x53a051, "info": 0x006d9c}</option>
+        <option name="charting.fieldColors">{"critical": 0xdc4e41, "high": 0xf1813f, "medium": 0xf8be34, "low": 0x53a051, "informational": 0x006d9c}</option>
       </chart>
     </panel>
   </row>
