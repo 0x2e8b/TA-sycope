@@ -120,6 +120,12 @@ In Sycope NPM:
 
 5. **Authentication** tab — set to **Disabled** (authorization is handled via the custom header above)
 
+6. **Options** tab — turn **SSL Verify** off if Splunk HEC uses a self-signed certificate
+
+7. **Custom Payload** tab — leave it disabled; TA-sycope parses the default Sycope JSON
+
+8. Add the destination as an action on each alert rule that should reach Splunk (action type third-party system, external system `REST`, your destination as the instance). A destination alone sends nothing.
+
 > **Important**: Use `/services/collector/raw` (not `/services/collector/event`). Sycope sends raw JSON without the `{"event":...}` wrapper that the `/event` endpoint requires. The `Bearer token` authentication option does not work with Splunk HEC — use a custom `Authorization` header with the `Splunk` prefix instead.
 
 #### Verify HEC manually
