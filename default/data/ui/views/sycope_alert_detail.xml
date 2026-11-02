@@ -1,5 +1,5 @@
 <form version="1.1">
-  <label>Sycope NPM - Alert Detail</label>
+  <label>Sycope - Alert Detail</label>
   <description>Drill-down view for individual alerts or filtered alert sets</description>
 
   <fieldset submitButton="true" autoRun="true">

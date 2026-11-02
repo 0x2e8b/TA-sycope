@@ -1,6 +1,6 @@
 <form version="1.1">
-  <label>Sycope NPM - Security Alert Overview</label>
-  <description>Executive summary of Sycope NPM security alerts</description>
+  <label>Sycope - Security Alert Overview</label>
+  <description>Executive summary of Sycope security alerts</description>
 
   <fieldset submitButton="true" autoRun="true">
     <input type="time" token="time_range" searchWhenChanged="true">

@@ -1,5 +1,5 @@
 <form version="1.1">
-  <label>Sycope NPM - MITRE ATT&amp;CK Mapping</label>
+  <label>Sycope - MITRE ATT&amp;CK Mapping</label>
   <description>Map Sycope security alerts to MITRE ATT&amp;CK framework tactics and techniques</description>
 
   <fieldset submitButton="true" autoRun="true">

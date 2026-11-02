@@ -1,5 +1,5 @@
 <form version="1.1">
-  <label>Sycope NPM - Alert Trend Analysis</label>
+  <label>Sycope - Alert Trend Analysis</label>
   <description>Long-term trend analysis of Sycope security alert patterns</description>
 
   <fieldset submitButton="true" autoRun="true">

@@ -1,17 +1,17 @@
-# TA-sycope - Splunk Technology Add-on for Sycope NPM
+# TA-sycope - Splunk Technology Add-on for Sycope NDR
 
 ![Splunk](https://img.shields.io/badge/Splunk-Technology%20Add--on-000000?logo=splunk&logoColor=white)
-![Sycope](https://img.shields.io/badge/Sycope-NPM-1F9D8A)
+![Sycope](https://img.shields.io/badge/Sycope-NDR-1F9D8A)
 ![Language](https://img.shields.io/badge/Language-SPL%20%2F%20XML-2F6FED)
 
 ## Overview
 
-TA-sycope is a Splunk Technology Add-on that enables ingestion, parsing, and visualization of security alerts from **Sycope NPM** (Network Performance Monitoring). Sycope analyzes NetFlow/sFlow data in real-time and generates security alerts with MITRE ATT&CK framework mapping.
+TA-sycope is a Splunk Technology Add-on that enables ingestion, parsing, and visualization of security alerts from **Sycope** (Network Detection and Response). Sycope analyzes NetFlow/sFlow/IPFIX data in real-time and generates security alerts with MITRE ATT&CK framework mapping.
 <img width="1470" height="1551" alt="image" src="https://github.com/user-attachments/assets/6b954cfc-06ca-4871-9577-4af5ca910b32" />
 
-### Supported Sycope NPM Versions
+### Supported Sycope Versions
 
-- Sycope NPM 3.x and later
+- Sycope 3.x and later
 
 ### Key Features
 
@@ -37,17 +37,17 @@ TA-sycope is a Splunk Technology Add-on that enables ingestion, parsing, and vis
    $SPLUNK_HOME/bin/splunk restart
    ```
 
-3. The app will appear in the Splunk Web menu as "Sycope NPM Security Alerts".
+3. The app will appear in the Splunk Web menu as "Sycope Security Alerts".
 
 ---
 
 ## Configuration
 
-Choose **one** of the following input methods depending on how Sycope NPM is configured to send alerts.
+Choose **one** of the following input methods depending on how Sycope is configured to send alerts.
 
 ### Option A: CEF/Syslog Input
 
-Sycope NPM sends security alerts as CEF-formatted syslog messages.
+Sycope sends security alerts as CEF-formatted syslog messages.
 
 #### Enable the built-in listener
 
@@ -61,9 +61,9 @@ connection_host = dns
 index = main
 ```
 
-#### Configure Sycope NPM
+#### Configure Sycope
 
-In Sycope NPM:
+In Sycope:
 1. Navigate to **Integrations > External Destinations**
 2. Add a new **Syslog** destination
 3. Set the syslog server IP to your Splunk instance
@@ -79,7 +79,7 @@ If you already have a syslog collector (syslog-ng, rsyslog, Splunk Universal For
 
 ### Option B: JSON/HEC Input (recommended)
 
-Sycope NPM sends security alerts as JSON via Splunk HTTP Event Collector. This format provides richer data including `mitreSubtechnique`, `score`, `ruleType`, country codes, and session counts.
+Sycope sends security alerts as JSON via Splunk HTTP Event Collector. This format provides richer data including `mitreSubtechnique`, `score`, `ruleType`, country codes, and session counts.
 
 #### Configure HEC in Splunk
 
@@ -91,9 +91,9 @@ Sycope NPM sends security alerts as JSON via Splunk HTTP Event Collector. This f
    - **Index**: `main` (or your preferred security index)
 4. Save and **copy the generated token**
 
-#### Configure Sycope NPM
+#### Configure Sycope
 
-In Sycope NPM:
+In Sycope:
 1. Navigate to **Integrations > External Destinations**
 2. Add or edit a **REST client** destination:
 
@@ -256,15 +256,15 @@ Then restart Splunk (or reload `/debug/refresh`). The analyst needs a Sycope log
 | `mitre_tactic_id` | MITRE tactic ID (from lookup) | TA0006 |
 | `transport` | Protocol name | tcp, udp, icmp |
 | `signature` | CIM alert signature | Brute Force Attack |
-| `vendor_product` | CIM vendor product | Sycope NPM |
+| `vendor_product` | CIM vendor product | Sycope NDR |
 
 ### CEF-specific Fields
 
 | Field | Description |
 |-------|-------------|
 | `cef_vendor` | CEF vendor (Sycope) |
-| `cef_product` | CEF product (NPM) |
-| `cef_device_version` | Sycope NPM version |
+| `cef_product` | CEF product, as sent by Sycope (`NPM`) |
+| `cef_device_version` | Sycope version |
 | `cef_severity` | CEF numeric severity |
 | `bytes_in` | Inbound bytes |
 | `bytes_out` | Outbound bytes |
@@ -314,7 +314,7 @@ TA-sycope maps to the `IDS_Attacks` data model:
 | `signature_id` | Rule ID |
 | `src` | Source IP |
 | `transport` | Protocol (tcp/udp/icmp) |
-| `vendor_product` | "Sycope NPM" |
+| `vendor_product` | "Sycope NDR" |
 
 ### Network Traffic Data Model (CEF only)
 
@@ -404,6 +404,10 @@ TA-sycope maps to the `IDS_Attacks` data model:
 ---
 
 ## Release Notes
+
+### Version 1.2.0
+- Naming: Sycope NPM renamed to Sycope / Sycope NDR in the app label, dashboards and docs
+- `vendor_product` is now `Sycope NDR` (was `Sycope NPM`); `dvc` is `sycope` for JSON events
 
 ### Version 1.1.0
 - Pivot to the Sycope console from Splunk events (workflow actions on source IP, destination IP, conversation)

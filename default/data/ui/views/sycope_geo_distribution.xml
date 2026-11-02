@@ -1,5 +1,5 @@
 <form version="1.1">
-  <label>Sycope NPM - Geographic Distribution</label>
+  <label>Sycope - Geographic Distribution</label>
   <description>Geographic distribution of security alert activity based on IP geolocation</description>
 
   <fieldset submitButton="true" autoRun="true">

@@ -1,5 +1,5 @@
 <form version="1.1">
-  <label>Sycope NPM - Top Attackers &amp; Targets</label>
+  <label>Sycope - Top Attackers &amp; Targets</label>
   <description>Identify the most active source (attacker) and destination (target) IP addresses</description>
 
   <fieldset submitButton="true" autoRun="true">
